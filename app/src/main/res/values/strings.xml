@@ -9,6 +9,7 @@
     <string name="locale_key" translatable="false">locale_key</string>
     <string name="provider_lang_key" translatable="false">provider_lang_key</string>
     <string name="restore_key" translatable="false">restore_key</string>
+    <string name="export_progress_key" translatable="false">export_progress_key</string>
     <string name="restore_settings">Restore data from backup</string>
 
     <string name="search_hint">Search Novels</string>
@@ -170,11 +171,14 @@
 
 
     <string name="backup_settings">Backup data</string>
+    <string name="export_progress_settings">Export reading progress</string>
     <string name="restore_success">Loaded backup file</string>
     <string name="restore_failed_format" formatted="true">Failed to restore data from file %s</string>
     <string name="backup_success">Successfully stored data</string>
     <string name="backup_failed">Storage permissions missing, please try again</string>
     <string name="backup_failed_error_format">Error backing up %s</string>
+    <string name="export_progress_success">Progress exported</string>
+    <string name="export_progress_failed_format" formatted="true">Error exporting progress %s</string>
     <string name="tts_locale">Language</string>
     <string name="tts_voice">Voice</string>
     <string name="tts_voice_title">TTS Voice</string>

@@ -23,6 +23,7 @@ import com.lagradost.quicknovel.util.Apis.Companion.apis
 import com.lagradost.quicknovel.util.Apis.Companion.getApiProviderLangSettings
 import com.lagradost.quicknovel.util.Apis.Companion.getApiSettings
 import com.lagradost.quicknovel.util.BackupUtils.backup
+import com.lagradost.quicknovel.util.BackupUtils.exportProgress
 import com.lagradost.quicknovel.util.BackupUtils.restorePrompt
 import com.lagradost.quicknovel.util.Coroutines.ioSafe
 import com.lagradost.quicknovel.util.InAppUpdater.Companion.runAutoUpdate
@@ -254,6 +255,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         getPref(R.string.backup_key)?.setOnPreferenceClickListener {
             activity?.backup()
+            return@setOnPreferenceClickListener true
+        }
+
+        getPref(R.string.export_progress_key)?.setOnPreferenceClickListener {
+            activity?.exportProgress()
             return@setOnPreferenceClickListener true
         }
 

@@ -104,6 +104,10 @@
                 android:icon="@drawable/baseline_save_as_24"
                 android:key="@string/backup_key"
                 android:title="@string/backup_settings" />
+        <Preference
+                android:icon="@drawable/baseline_save_as_24"
+                android:key="@string/export_progress_key"
+                android:title="@string/export_progress_settings" />
 
         <Preference
                 android:icon="@drawable/baseline_restore_page_24"

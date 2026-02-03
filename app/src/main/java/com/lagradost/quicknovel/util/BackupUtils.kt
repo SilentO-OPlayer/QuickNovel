@@ -19,7 +19,15 @@ import com.lagradost.quicknovel.DataStore
 import com.lagradost.quicknovel.DataStore.getDefaultSharedPrefs
 import com.lagradost.quicknovel.DataStore.getSharedPrefs
 import com.lagradost.quicknovel.DataStore.mapper
+import com.lagradost.quicknovel.DOWNLOAD_FOLDER
+import com.lagradost.quicknovel.EPUB_CURRENT_POSITION
+import com.lagradost.quicknovel.EPUB_CURRENT_POSITION_CHAPTER
+import com.lagradost.quicknovel.EPUB_CURRENT_POSITION_READ_AT
+import com.lagradost.quicknovel.EPUB_CURRENT_POSITION_SCROLL
+import com.lagradost.quicknovel.EPUB_CURRENT_POSITION_SCROLL_CHAR
 import com.lagradost.quicknovel.R
+import com.lagradost.quicknovel.RESULT_BOOKMARK
+import com.lagradost.quicknovel.RESULT_BOOKMARK_STATE
 import com.lagradost.quicknovel.mvvm.logError
 import com.lagradost.quicknovel.ui.settings.SettingsFragment
 import com.lagradost.safefile.SafeFile
@@ -47,6 +55,18 @@ object BackupUtils {
     data class BackupFile(
         @JsonProperty("datastore") val datastore: BackupVars,
         @JsonProperty("settings") val settings: BackupVars
+    )
+
+    data class ProgressExportFile(
+        @JsonProperty("exportedAt") val exportedAt: Long,
+        @JsonProperty("bookmarks") val bookmarks: Map<String, String>,
+        @JsonProperty("bookmarkStates") val bookmarkStates: Map<String, Int>,
+        @JsonProperty("downloads") val downloads: Map<String, String>,
+        @JsonProperty("chapterReadAt") val chapterReadAt: Map<String, Long>,
+        @JsonProperty("epubPosition") val epubPosition: Map<String, Int>,
+        @JsonProperty("epubPositionChapter") val epubPositionChapter: Map<String, String>,
+        @JsonProperty("epubPositionScroll") val epubPositionScroll: Map<String, Int>,
+        @JsonProperty("epubPositionScrollChar") val epubPositionScrollChar: Map<String, Int>
     )
 
     fun setupStream(context: Context, displayName : String, ext : String, subDir : SafeFile?) : OutputStream? {
@@ -140,6 +160,53 @@ object BackupUtils {
             } catch (e: Exception) {
                 logError(e)
             }
+        }
+    }
+
+    private inline fun <reified T> Map<String, *>.filterPrefix(prefix: String): Map<String, T> {
+        return this.mapNotNull { (key, value) ->
+            if (key.startsWith(prefix) && value is T) {
+                key.removePrefix(prefix) to value
+            } else {
+                null
+            }
+        }.toMap()
+    }
+
+    fun FragmentActivity.exportProgress() {
+        try {
+            if (!checkWrite()) {
+                showToast(getString(R.string.backup_failed), Toast.LENGTH_LONG)
+                requestRW()
+                return
+            }
+
+            val subDir = SettingsFragment.getDefaultDir(context = this)
+            val date = SimpleDateFormat("yyyy_MM_dd_HH_mm").format(Date(currentTimeMillis()))
+            val displayName = "QN_Progress_${date}"
+            val allData = getSharedPrefs().all
+
+            val progressFile = ProgressExportFile(
+                exportedAt = currentTimeMillis(),
+                bookmarks = allData.filterPrefix("$RESULT_BOOKMARK/"),
+                bookmarkStates = allData.filterPrefix("$RESULT_BOOKMARK_STATE/"),
+                downloads = allData.filterPrefix("$DOWNLOAD_FOLDER/"),
+                chapterReadAt = allData.filterPrefix("$EPUB_CURRENT_POSITION_READ_AT/"),
+                epubPosition = allData.filterPrefix("$EPUB_CURRENT_POSITION/"),
+                epubPositionChapter = allData.filterPrefix("$EPUB_CURRENT_POSITION_CHAPTER/"),
+                epubPositionScroll = allData.filterPrefix("$EPUB_CURRENT_POSITION_SCROLL/"),
+                epubPositionScrollChar = allData.filterPrefix("$EPUB_CURRENT_POSITION_SCROLL_CHAR/")
+            )
+
+            val stream = setupStream(this, displayName, "json", subDir)
+            val printStream = PrintWriter(stream)
+            printStream.print(mapper.writeValueAsString(progressFile))
+            printStream.close()
+
+            showToast(R.string.export_progress_success, Toast.LENGTH_LONG)
+        } catch (e: Exception) {
+            logError(e)
+            showToast(getString(R.string.export_progress_failed_format).format(e.toString()))
         }
     }
 
